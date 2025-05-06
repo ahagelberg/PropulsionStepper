@@ -54,17 +54,17 @@ void loop() {
 
 ### Methods
 
-- `void moveAbsolute(long targetPosition, float speed)`
-- `void moveRelative(long steps, float speed)`
-- `void spin(float speed)`
-- `void stop()`
-- `void powerOn()`
-- `void powerOff()`
-- `float speed() const`
-- `long position() const`
-- `bool isMoving() const`
-- `bool isPoweredOn() const`
-- `void setAcceleration(float acceleration)`
+- `void moveAbsolute(long targetPosition, float speed)` - Move to absolute position
+- `void moveRelative(long steps, float speed)` - Move relative to current position
+- `void spin(float speed)` - Continuous rotation at set speed (steps/s^2)
+- `void stop()` - Stop motion immediately (no deceleration). To stop with deceleration use spin(0).
+- `void powerOn()` - Enable motor driver (assumes active LOW signal)
+- `void powerOff()` - Disable motor driver (assumes active LOW signal)
+- `float speed() const` - Set top speed for relative and absolute motion
+- `long position() const` - Return current position
+- `bool isMoving() const` - Returns true if motor is moving
+- `bool isPoweredOn() const` - Retuns true if driver is enabled
+- `void setAcceleration(float acceleration)` - Sets the acceleration in steps/s^2
 
 ## License
 
