@@ -1,6 +1,6 @@
 {
     "name": "PropulsionStepper",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "Library for controlling stepper motors with acceleration and deceleration.",
     "keywords": ["stepper", "motor", "control", "acceleration", "continuous roation", "absolute movement", "relative movement"],
     "repository": {
@@ -16,3 +16,4 @@
     "frameworks": ["avr", "esp8266", "esp32"],
     "platforms": ["*"]
   }
+  
