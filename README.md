@@ -1,6 +1,8 @@
 # PropulsionStepper Library
 
-The `PropulsionStepper` library provides an easy-to-use interface for controlling stepper motors with Arduino. It allows for precise movement to absolute or relative positions, speed and acceleration management, as well as continuous rotation.
+The `PropulsionStepper` library provides an easy-to-use interface for controlling stepper motors with Arduino. It allows for precise movement to absolute or relative positions, speed and acceleration management, as well as continuous rotation
+
+Currently the library support only 2 or 3-pin drivers, i.e. drivers with step and direction signal with an optional (active LOW) enable signal.
 
 ## Features
 
