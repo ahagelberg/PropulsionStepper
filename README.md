@@ -1,0 +1,71 @@
+# PropulsionStepper Library
+
+The `PropulsionStepper` library provides an easy-to-use interface for controlling stepper motors with Arduino. It allows for precise movement to absolute or relative positions, speed and acceleration management, as well as continuous rotation.
+
+## Features
+
+- Move to absolute or relative positions
+- Continuous movement
+- Set speed and acceleration
+- Control power states (on/off)
+
+## Installation
+
+1. Download the `PropulsionStepper` library from the repository.
+2. Extract the contents to your Arduino libraries folder, typically located at `Documents/Arduino/libraries/`.
+3. Restart the Arduino IDE to recognize the new library.
+
+## Usage
+
+To use the `PropulsionStepper` library in your Arduino sketch, include the header file:
+
+```cpp
+#include <PropulsionStepper.h>
+```
+
+### Example
+
+Here is a basic example of how to use the `PropulsionStepper` library:
+
+```cpp
+#include <PropulsionStepper.h>
+
+const int stepPin = 3;
+const int dirPin = 4;
+
+PropulsionStepper stepper(stepPin, dirPin);
+
+void setup() {
+    stepper.setAcceleration(100.0);
+    stepper.moveAbsolute(200, 50.0); // Move to position 200 at speed 50
+}
+
+void loop() {
+    stepper.loop(); // Call loop to update motor state
+}
+```
+
+## API Reference
+
+### Constructor
+
+- `PropulsionStepper(int stepPin, int dirPin, int enablePin)`
+- `PropulsionStepper(int stepPin, int dirPin)`
+
+### Methods
+
+- `void moveAbsolute(long targetPosition, float speed)`
+- `void moveRelative(long steps, float speed)`
+- `void spin(float speed)`
+- `void stop()`
+- `void powerOn()`
+- `void powerOff()`
+- `float speed() const`
+- `long position() const`
+- `bool isMoving() const`
+- `bool isPoweredOn() const`
+- `void setAcceleration(float acceleration)`
+
+## License
+
+This library is released under the MIT License. See the LICENSE file for more details.

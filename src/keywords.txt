@@ -1,0 +1,14 @@
+class: PropulsionStepper
+moveAbsolute: moveAbsolute
+moveRelative: moveRelative
+spin: spin
+stop: stop
+powerOn: powerOn
+powerOff: powerOff
+setAcceleration: setAcceleration
+position: position
+speed: speed
+isMoving: isMoving
+isPoweredOn: isPoweredOn
+acceleration: acceleration
+loop: loop
