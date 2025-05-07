@@ -37,6 +37,10 @@ bool PropulsionStepper::isMoving() const {
     }
 }
 
+bool PropulsionStepper::isSpinning() const {
+    return isSpinning();
+}
+
 bool PropulsionStepper::isPoweredOn() const {
     if (_enablePin == -1) {
         return true;
