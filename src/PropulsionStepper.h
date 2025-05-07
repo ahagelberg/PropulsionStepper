@@ -11,6 +11,7 @@ public:
     
     float acceleration() const;
     bool isMoving() const;
+    bool isSpinning() const;
     bool isPoweredOn() const;
     void loop();
     void moveAbsolute(long targetPosition, float speed);
