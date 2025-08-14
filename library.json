@@ -1,6 +1,6 @@
 {
     "name": "PropulsionStepper",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Library for controlling stepper motors with acceleration and deceleration.",
     "keywords": ["stepper", "motor", "control", "acceleration", "continuous rotation", "absolute movement", "relative movement"],
     "repository": {
