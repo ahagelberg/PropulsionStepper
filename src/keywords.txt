@@ -6,9 +6,13 @@ stop: stop
 powerOn: powerOn
 powerOff: powerOff
 setAcceleration: setAcceleration
+setPosition: setPosition
 position: position
 speed: speed
 isMoving: isMoving
 isPoweredOn: isPoweredOn
 acceleration: acceleration
+enableAutoOff: enableAutoOff
+invertDirection: invertDirection
+invertEnable: invertEnable
 loop: loop

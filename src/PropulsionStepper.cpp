@@ -2,19 +2,32 @@
 #include "PropulsionStepper.h"
 
 PropulsionStepper::PropulsionStepper(int stepPin, int dirPin, int enablePin)
-    : _stepPin(stepPin), _dirPin(dirPin), _enablePin(enablePin),
-      _targetSpeed(0), _currentSpeed(0), _acceleration(0),
+    : _stepPin(stepPin), _dirPin(dirPin), _enablePin(enablePin), _invertDirection(false),
+      _invertEnable(false), _autoOffEnabled(false), _targetSpeed(0), _currentSpeed(0), _acceleration(0),
       _lastStepTime(0), _lastSpeedUpdateTime(0), _currentPosition(0), _targetPosition(0),
       _moveSpeed(100) {
     pinMode(_stepPin, OUTPUT);
     pinMode(_dirPin, OUTPUT);
     pinMode(_enablePin, OUTPUT);
-    digitalWrite(_enablePin, LOW); // Enable motor driver
+    // Set enable pin to "motor enabled" state based on inversion
+    digitalWrite(_enablePin, _invertEnable ? HIGH : LOW);
+}
+
+PropulsionStepper::PropulsionStepper(int stepPin, int dirPin, int enablePin, bool invertEnable)
+    : _stepPin(stepPin), _dirPin(dirPin), _enablePin(enablePin), _invertDirection(false),
+      _invertEnable(invertEnable), _autoOffEnabled(false), _targetSpeed(0), _currentSpeed(0), _acceleration(0),
+      _lastStepTime(0), _lastSpeedUpdateTime(0), _currentPosition(0), _targetPosition(0),
+      _moveSpeed(100) {
+    pinMode(_stepPin, OUTPUT);
+    pinMode(_dirPin, OUTPUT);
+    pinMode(_enablePin, OUTPUT);
+    // Set enable pin to "motor enabled" state based on inversion
+    digitalWrite(_enablePin, _invertEnable ? HIGH : LOW);
 }
 
 PropulsionStepper::PropulsionStepper(int stepPin, int dirPin)
-    : _stepPin(stepPin), _dirPin(dirPin), _enablePin(-1),
-      _targetSpeed(0), _currentSpeed(0), _acceleration(0),
+    : _stepPin(stepPin), _dirPin(dirPin), _enablePin(-1), _invertDirection(false),
+      _invertEnable(false), _autoOffEnabled(false), _targetSpeed(0), _currentSpeed(0), _acceleration(0),
       _lastStepTime(0), _lastSpeedUpdateTime(0), _currentPosition(0), _targetPosition(0),
       _moveSpeed(100) {
     pinMode(_stepPin, OUTPUT);
@@ -45,7 +58,8 @@ bool PropulsionStepper::isPoweredOn() const {
     if (_enablePin == -1) {
         return true;
     }
-    return digitalRead(_enablePin) == LOW;
+    bool pinState = digitalRead(_enablePin) == HIGH;
+    return _invertEnable ? pinState : !pinState;
 }
 
 void PropulsionStepper::loop() {
@@ -53,11 +67,18 @@ void PropulsionStepper::loop() {
 
     switch (_mode) {
         case STOPPED:
+            // Auto power off when stopped if enabled
+            if (_autoOffEnabled && _enablePin != -1 && isPoweredOn()) {
+                powerOff();
+            }
             break;
 
         case CONTINUOUS_MOVEMENT:
             if (_targetSpeed != 0 || _currentSpeed != 0) {
                 driveMotor();
+            } else if (_autoOffEnabled && _enablePin != -1 && isPoweredOn()) {
+                // Auto power off when movement stops
+                powerOff();
             }
             break;
 
@@ -73,12 +94,20 @@ void PropulsionStepper::loop() {
                     _targetSpeed = _moveSpeed * dir;
                 }
                 driveMotor();
+            } else if (_autoOffEnabled && _enablePin != -1 && isPoweredOn()) {
+                // Auto power off when target position is reached
+                powerOff();
             }
             break;
     }
 }
 
 void PropulsionStepper::moveAbsolute(long targetPosition, float speed) {
+    // Auto power on if enabled and motor is powered off
+    if (_autoOffEnabled && _enablePin != -1 && !isPoweredOn()) {
+        powerOn();
+    }
+    
     _mode = STEP_MOVEMENT;
     if (!isMoving()) {
         _lastSpeedUpdateTime = micros();
@@ -90,6 +119,11 @@ void PropulsionStepper::moveAbsolute(long targetPosition, float speed) {
 }
 
 void PropulsionStepper::moveRelative(long steps, float speed) {
+    // Auto power on if enabled and motor is powered off
+    if (_autoOffEnabled && _enablePin != -1 && !isPoweredOn()) {
+        powerOn();
+    }
+    
     _mode = STEP_MOVEMENT;
     if (!isMoving()) {
         _lastSpeedUpdateTime = micros();
@@ -107,13 +141,15 @@ long PropulsionStepper::position() const {
 void PropulsionStepper::powerOff() {
     if (_enablePin != -1) {
         _currentSpeed = 0;
-        digitalWrite(_enablePin, HIGH);
+        // Set enable pin to "motor disabled" state based on inversion
+        digitalWrite(_enablePin, _invertEnable ? LOW : HIGH);
     }
 }
 
 void PropulsionStepper::powerOn() {
     if (_enablePin != -1) {
-        digitalWrite(_enablePin, LOW);
+        // Set enable pin to "motor enabled" state based on inversion
+        digitalWrite(_enablePin, _invertEnable ? HIGH : LOW);
     }
 }
 
@@ -125,11 +161,28 @@ void PropulsionStepper::setAcceleration(float acceleration) {
     _acceleration = acceleration;
 }
 
+void PropulsionStepper::enableAutoOff(bool enable) {
+    _autoOffEnabled = enable;
+}
+
+void PropulsionStepper::invertDirection(bool invert) {
+    _invertDirection = invert;
+}
+
+void PropulsionStepper::invertEnable(bool invert) {
+    _invertEnable = invert;
+}
+
 void PropulsionStepper::setPosition(long position) {
     _currentPosition = position;
 }
 
 void PropulsionStepper::spin(float speed) {
+    // Auto power on if enabled and motor is powered off (only if speed is not 0)
+    if (speed != 0 && _autoOffEnabled && _enablePin != -1 && !isPoweredOn()) {
+        powerOn();
+    }
+    
     _mode = CONTINUOUS_MOVEMENT;
     if (speed == _targetSpeed) {
         return;
@@ -163,7 +216,11 @@ void PropulsionStepper::driveMotor() {
     _stepDeltaTime = 1e6 / abs(_currentSpeed);
     if (currentTime - _lastStepTime >= _stepDeltaTime) {
         step();
-        digitalWrite(_dirPin, (_currentSpeed > 0) ? HIGH : LOW);
+        bool direction = (_currentSpeed > 0);
+        if (_invertDirection) {
+            direction = !direction;
+        }
+        digitalWrite(_dirPin, direction ? HIGH : LOW);
         _lastStepTime = currentTime;
     }
 }
@@ -172,5 +229,9 @@ void PropulsionStepper::step() {
     digitalWrite(_stepPin, HIGH);
     delayMicroseconds(1);
     digitalWrite(_stepPin, LOW);
-    _currentPosition += ((_currentSpeed > 0) ? 1 : -1);
+    int positionIncrement = (_currentSpeed > 0) ? 1 : -1;
+    if (_invertDirection) {
+        positionIncrement = -positionIncrement;
+    }
+    _currentPosition += positionIncrement;
 }

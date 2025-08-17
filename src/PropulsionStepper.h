@@ -7,9 +7,13 @@
 class PropulsionStepper {
 public:
     PropulsionStepper(int stepPin, int dirPin, int enablePin);
+    PropulsionStepper(int stepPin, int dirPin, int enablePin, bool invertEnable);
     PropulsionStepper(int stepPin, int dirPin);
     
     float acceleration() const;
+    void enableAutoOff(bool enable);
+    void invertDirection(bool invert);
+    void invertEnable(bool invert);
     bool isMoving() const;
     bool isSpinning() const;
     bool isPoweredOn() const;
@@ -32,6 +36,9 @@ private:
     int _stepPin;
     int _dirPin;
     int _enablePin;
+    bool _invertDirection;
+    bool _invertEnable;
+    bool _autoOffEnabled;
     float _targetSpeed;
     float _currentSpeed;
     float _acceleration;
